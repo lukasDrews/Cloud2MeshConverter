@@ -13,7 +13,7 @@ import subprocess
 import site
 import importlib
 
-libraries_to_install = ["open3d", "laspy", "numpy"]
+libraries_to_install = ["open3d", "laspy", "numpy", "tqdm"]
 
 auto_import = True
 
@@ -40,6 +40,7 @@ else:
     import open3d
     import laspy
     import numpy
+    import tqdm
      
 o3d = open3d
 
@@ -51,6 +52,7 @@ import numpy as np
 import math
 from typing import Tuple
 from pathlib import Path
+import curses
 
 from bpy.types import Scene
 from bpy.types import Panel
@@ -78,6 +80,8 @@ def texture_mesh(self, context):
         time.sleep(0.1)
         
         # self.report({'INFO'},"This may take some time")
+        
+        print("prepare texturing...")
         
         mesh_object = context.view_layer.objects.active
             
@@ -182,8 +186,8 @@ def texture_mesh(self, context):
         def map_to_range(value: float, value_min: float, value_max: float, range_min: float, range_max: float) -> float:
             return range_min + (float(value - value_min) / float(value_max - value_min) * (range_max - range_min))
 
-
-        for i, triangle in enumerate(triangles):
+        for i, triangle in tqdm.tqdm(enumerate(triangles), total=triangle_count, desc="Texturing"):
+            
             # calculate bounding box
             min_u = np.min(triangle_uvs[3 * i:3 * i + 3, 0])
             max_u = np.max(triangle_uvs[3 * i:3 * i + 3, 0])
@@ -488,38 +492,44 @@ class ReadPointCloud(Operator):
 
         
         return result
+    
+
+class DecimateGeometry(Operator):
+    bl_idname = "c2m.decimate_geometry"
+    bl_label = "Decimate geometry"
+            
+    def execute(self, context):
+        if context.view_layer.objects.active:
+            mesh_object = context.view_layer.objects.active
+            if mesh_object.type != 'MESH':
+                return {'CANCELLED'}
+            bpy.ops.object.mode_set(mode="EDIT") 
+            
+
+        
+        return {'FINISHED'} 
         
 def remove_vertices(self, context):
+    
     if context.view_layer.objects.active:
-        #bpy.ops.object.mode_set(mode="OBJECT")
         mesh_object = context.view_layer.objects.active
         
-        bm = bmesh.new()    
-        if context.mode == 'EDIT_MESH':
-            bm = bmesh.from_edit_mesh(mesh_object.data) 
-        else:        
-            bm.from_mesh(mesh_object.data)
+        bpy.ops.object.mode_set(mode="EDIT") 
+          
+        bm = bmesh.from_edit_mesh(mesh_object.data) 
         
         density_layer = bm.verts.layers.float.get('density') 
 
         removal_threshold = context.scene.triangulation_removal_threshold
         
         if density_layer:
-            
-            # Go to Edit mode and deselect everything      
-            bpy.ops.object.mode_set(mode="EDIT")
-            bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.mesh.select_mode(type="VERT")
-             
+            bpy.ops.mesh.select_all(action='DESELECT')
             
             # fetch density values
             densities = []
             bm.verts.ensure_lookup_table()
-            for vert in bm.verts:
-                bm.verts[vert.index].select_set(False) 
-                density = bm.verts[vert.index][density_layer]
-                densities.append(density)
-                
+            densities = [bm.verts[vert.index][density_layer] for vert in bm.verts]
             
             # quantile (removing a certain percentage)
             vertices_to_remove = densities < np.quantile(densities, removal_threshold)
@@ -531,17 +541,16 @@ def remove_vertices(self, context):
             
             bm.select_flush(True)
             bpy.ops.mesh.select_mode(type="FACE")
-            bm.select_flush(False)
             
         else:
-            self.report({'ERROR'}, "Mesh has no density layer.")
+            print("Mesh has no density layer.")
             return 
                 
     else:
-        self.report({'ERROR'}, "No active mesh.")
+        print("No active mesh.")
         return
-          
-    
+        
+
 
 class Cloud2MeshPanel(bpy.types.Panel):
     """ Settings for conversion """
@@ -592,6 +601,10 @@ class UtilityPanel(bpy.types.Panel):
         row.label(text="Vertex removal threshold:")
         row.prop(context.scene, "triangulation_removal_threshold", text="")
         
+        #row2 = self.layout.row()
+        #row2.label(text="Decimate geometry:")
+        #row2.operator("c2m.decimate_geometry")
+        
 
 class SettingsPanel(bpy.types.Panel):
     """ Settings for conversion """
@@ -633,7 +646,8 @@ classes = (
         SettingsPanel,
         ReadPointCloud,
         TriangulatePointCloud,
-        TextureMesh
+        TextureMesh,
+        DecimateGeometry
     )
 
 def register():
@@ -656,7 +670,7 @@ def register():
     Scene.texture_output_path = StringProperty(name="texture_output_path", subtype="DIR_PATH", default="")
     Scene.color_search_radius = IntProperty(name="color_search_radius", default=1)
     Scene.color_max_neighbors = IntProperty(name="color_max_neighbors", default=1)
-    Scene.texture_size = IntProperty(name="texture_size", default=4096)
+    Scene.texture_size = IntProperty(name="texture_size", default=1024)
     Scene.texture_sub_pixels = IntProperty(name="texture_sub_pixels", default=1)
     Scene.texture_pixel_corners = BoolProperty(name="texture_pixel_corners", default=True)
     Scene.texturing_pointcloud_size = IntProperty(name="texturing_pointcloud_size", default=1_000_000)
