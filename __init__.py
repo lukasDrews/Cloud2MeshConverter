@@ -162,13 +162,13 @@ def triangulate_pointcloud(self, context):
     edges = []
     faces = np.asarray(mesh.triangles)
     
-    blender_mesh = bpy.data.meshes.new('mesh')
+    blender_mesh = bpy.data.meshes.new('c2m_mesh')
     blender_mesh.from_pydata(vertices, edges, faces)
     blender_mesh.update()
 
     
     # add object to scene
-    mesh_object = bpy.data.objects.new('mesh', blender_mesh)
+    mesh_object = bpy.data.objects.new('c2m_mesh', blender_mesh)
     collection = bpy.data.collections.get(context.scene.collection_name)
     if collection is None:
         collection = bpy.data.collections.new(context.scene.collection_name)
@@ -180,7 +180,7 @@ def triangulate_pointcloud(self, context):
     bm.from_mesh(mesh_object.data) 
 
     # add density property to my mesh
-    density_layer = bm.verts.layers.float.new('density')
+    density_layer = bm.verts.layers.float.new('c2m_density')
     bm.verts.ensure_lookup_table()
     for vert in bm.verts:
         vert.select_set(False) 
@@ -312,9 +312,6 @@ def texture_mesh(self, context):
 
         subpixel_hits = np.zeros((width, height), dtype=np.int32)
         
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        
         print(f"Points in pointcloud: {len(pointcloud_down_sampled.points)}")
         print(f"Triangles in mesh   : {triangle_count}")
 
@@ -441,7 +438,7 @@ def texture_mesh(self, context):
         o3d.io.write_image(str(output_path), color_texture.flip_vertical())
         
         # create material with new texture
-        mat = bpy.data.materials.new(name="MyMaterial")
+        mat = bpy.data.materials.new(name="c2m_Material")
         mesh_object.data.materials.append(mat)
         mat.use_nodes = True
         nodes = mat.node_tree.nodes
@@ -470,7 +467,7 @@ def remove_vertices(self, context):
           
         bm = bmesh.from_edit_mesh(mesh_object.data) 
         
-        density_layer = bm.verts.layers.float.get('density') 
+        density_layer = bm.verts.layers.float.get('c2m_density') 
 
         removal_threshold = context.scene.triangulation_removal_threshold
         
@@ -656,7 +653,7 @@ class SettingsPanel(bpy.types.Panel):
         
         box3 = layout.box()
         box3.label(text="Texturing")
-        box3.prop(context.scene, "texture_output_path", text="Texture output path")
+        box3.prop(context.scene, "texture_output_path", text="     Texture output path")
         box3.prop(context.scene, "texture_size", text="Texture size")
         box3.prop(context.scene, "texture_sub_pixels", text="Texture sub pixels")
         box3.prop(context.scene, "texturing_pointcloud_size", text="Texturing pointcloud size")
@@ -679,7 +676,7 @@ def register():
     from bpy.utils import register_class
     for cls in classes:
         register_class(cls)
-    Scene.collection_name = StringProperty(name="collection_name", default="Converter Collection")
+    Scene.collection_name = StringProperty(name="collection_name", default="C2M Collection")
     Scene.pointcloud_path = StringProperty(name="pointcloud_path", subtype="FILE_PATH")
     Scene.pointcloud_name = StringProperty(name="pointcloud_name", default="")
     
