@@ -348,7 +348,6 @@ def texture_mesh(self, context):
 
             return intersections
 
-        # TODO: Implement Scanline Algorithm
         for i, triangle in tqdm.tqdm(enumerate(triangles), total=triangle_count, desc="Texturing"):
 
             # calculate bounding box
