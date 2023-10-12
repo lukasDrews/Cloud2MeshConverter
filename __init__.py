@@ -372,13 +372,13 @@ def texture_mesh(self, context):
                                                         triangle_uvs[3 * i + 1][0], triangle_uvs[3 * i + 1][1],
                                                         triangle_uvs[3 * i + 2][0], triangle_uvs[3 * i + 2][1],
                                                         scanline)
-                intersections = [x for x in intersections if min_u < x < max_u]
+                intersections = [x for x in intersections if min_u <= x <= max_u]
 
                 new_min = min_u_pixel
                 new_max = max_u_pixel
                 if intersections:
                     new_min = math.floor(min(intersections) * width)
-                    new_max = math.floor(max(intersections) * width)
+                    new_max = math.floor(max(intersections) * width) 
 
                 for act_width in range(new_min, new_max):
 
@@ -405,10 +405,14 @@ def texture_mesh(self, context):
                                 pixel_positions.append(p)
 
                     if context.scene.texture_pixel_corners:
-                        for corner in range(4):
-                            p = [(act_width + (2.0 * (corner % 2) * 0.5)) * pixel_width,
-                                 (act_height + (2.0 * (corner // 2) * 0.5)) * pixel_height]
-                            pixel_positions.append(p)
+                       
+                        if act_width == new_min or act_width == new_max:
+                            for corner in range(4):
+                                p = [(act_width + (2.0 * (corner % 2) * 0.5)) * pixel_width,
+                                     (act_height + (2.0 * (corner // 2) * 0.5)) * pixel_height]
+                                pixel_positions.append(p)
+                            
+
 
                     for pixel_pos in pixel_positions:
 
@@ -417,7 +421,7 @@ def texture_mesh(self, context):
                                                          triangle_uvs[3 * i + 1][0], triangle_uvs[3 * i + 1][1],
                                                          triangle_uvs[3 * i + 2][0], triangle_uvs[3 * i + 2][1])
 
-                        if 0.0 <= alpha <= 1.0 and 0.0 <= beta <= 1.0 and 0.0 <= gamma <= 1.0:
+                        if 0.0 <= alpha  and 0.0 <= beta <= 1.0 and 0.0 <= gamma <= 1.0:
 
                             # if barycentric coordinates are positive the pixel position lays within the triangle
                             v_a = vertices[triangles[i][0]]
