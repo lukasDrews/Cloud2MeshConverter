@@ -15,7 +15,9 @@ In both cases search for "Cloud2Mesh" and tick the box.
 
 This process can take some time because some dependencies has to be installed.
 Now the UI should appear on the right side:
+
 ![](./resources/ui.png)
+
 > **_NOTE:_** 
 > It is very useful to open the console while using the addon. 
 > For that use `Window > Toggle System Console`.
