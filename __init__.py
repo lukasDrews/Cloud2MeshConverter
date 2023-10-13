@@ -1,10 +1,11 @@
 bl_info = {
-    "name": "c2m",
+    "name": "Cloud2MeshConverter",
     "blender": (3, 60, 4),
     "description": "Converts pointcloud to textured mesh.",
     "location": "Right side panel > \"c2m\" tab",
-    "category": "c2m",
+    "category": "Import-Export",
 }
+
 
 import sys
 import os
@@ -188,6 +189,9 @@ def texture_mesh(self, context):
 
     if pointcloud is None:
         self.report({'ERROR'}, "Pointcloud is None.")
+        return {'CANCELLED'}
+    elif not pointcloud.colors:
+        self.report({'ERROR'}, "Pointcloud has no colors.")
         return {'CANCELLED'}
 
     if context.view_layer.objects.active:
@@ -670,19 +674,20 @@ class SettingsPanel(bpy.types.Panel):
 
         box2 = layout.box()
         box2.label(text="Triangulation")
-        box2.prop(context.scene, "pointcloud_downsampling_size", text="Pointcloud downsampling size")
-        box2.prop(context.scene, "triangulation_depth", text="Triangulation depth")
-        box2.prop(context.scene, "triangulation_scale", text="Triangulation scale")
+        box2.prop(context.scene, "pointcloud_downsampling_size", text="pdownsampling size")
+        box2.prop(context.scene, "triangulation_depth", text="depth")
+        # box2.prop(context.scene, "triangulation_scale", text="scale")
 
         box3 = layout.box()
         box3.label(text="Texturing")
-        box3.prop(context.scene, "texture_output_path", text="     Texture output path")
-        box3.prop(context.scene, "texture_size", text="Texture size")
-        box3.prop(context.scene, "texture_sub_pixels", text="Texture sub pixels")
-        box3.prop(context.scene, "texturing_pointcloud_size", text="Texturing pointcloud size")
-        box3.prop(context.scene, "color_search_radius", text="Color search radius")
-        box3.prop(context.scene, "color_max_neighbors", text="Color max neighbors")
+        box3.prop(context.scene, "texture_output_path", text="     output path")
+        box3.prop(context.scene, "texturing_pointcloud_size", text="pointcloud size")
+        box3.prop(context.scene, "texture_size", text="size")
+        box3.prop(context.scene, "texture_sub_pixels", text="subpixels")
         box3.prop(context.scene, "texture_pixel_corners", text="pixel corners")
+        #box3.prop(context.scene, "color_search_radius", text="color search radius")
+       # box3.prop(context.scene, "color_max_neighbors", text="color max neighbors")
+
 
 
 classes = (
