@@ -42,7 +42,7 @@ When the algorithm finished, a new collection including the mesh is created :
 ## Texturing
 In this step a texture for the mesh is calculated using the pointcloud. It will only work if the cloud contains color data.
 First choose an output path. After that think about the texture size. The runtime is mainly depending on the number of triangles and 
-the texture's resolution. So think about to decimate the mesh as much as possible without changing shape too much.
+the texture's resolution. Try to decimate the mesh as much as possible without changing shape too much (see [Decimation](#Decimation)).
 High resolution textures will take some time. It can be wise to do some tests with smaller resolution.
 
 | Property          | Description                                                                                                                   |
