@@ -376,9 +376,9 @@ def texture_mesh(self, context):
 
                 new_min = min_u_pixel
                 new_max = max_u_pixel
-                if intersections:
-                    new_min = math.floor(min(intersections) * width)
-                    new_max = math.floor(max(intersections) * width) 
+                #if intersections:
+                #    new_min = math.floor(min(intersections) * width)
+                #    new_max = math.floor(max(intersections) * width) 
 
                 for act_width in range(new_min, new_max):
 
@@ -406,12 +406,12 @@ def texture_mesh(self, context):
 
                     if context.scene.texture_pixel_corners:
                        
-                        if act_width == new_min or act_width == new_max:
-                            for corner in range(4):
-                                p = [(act_width + (2.0 * (corner % 2) * 0.5)) * pixel_width,
-                                     (act_height + (2.0 * (corner // 2) * 0.5)) * pixel_height]
-                                pixel_positions.append(p)
-                            
+                        #if act_width == new_min or act_width == new_max:
+                        for corner in range(4):
+                            p = [(act_width + (2.0 * (corner % 2) * 0.5)) * pixel_width,
+                                 (act_height + (2.0 * (corner // 2) * 0.5)) * pixel_height]
+                            pixel_positions.append(p)
+                        
 
 
                     for pixel_pos in pixel_positions:
