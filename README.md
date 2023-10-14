@@ -54,12 +54,12 @@ High resolution textures will take some time. It can be wise to do some tests wi
 | `pixel corners`   | Used to reduce seams, but increases calculation time.                                                                         |
  
 
-## Utilty
+## Utility
 ### Vertex removal
 The surface reconstruction algorithm sometimes produces low density triangles. In some cases these extra triangles are useful,
 because they fill holes, in other cases they form weird shapes, particularly on the meshes edges. For this case the operator
 swtiches to edit mode and a percentage of the lowest density triangles are selected. The selection can be adjusted by hand.
-Press `esc` to remove selected faces/vertices. 
+Press `del` to remove selected faces/vertices. 
 
 ### Decimation
 There is no UI for this, because Blender already has a builtin decimation Function. Go to `EDIT` mode and select an area (or press `A` for all).
