@@ -360,32 +360,33 @@ def texture_mesh(self, context):
             min_v = np.min(triangle_uvs[3 * i:3 * i + 3, 1])
             max_v = np.max(triangle_uvs[3 * i:3 * i + 3, 1])
 
-            min_u_pixel = max(0, math.floor(min_u * width) - 1)
-            max_u_pixel = min(width, math.floor(max_u * width) + 1)
-            min_v_pixel = max(0, math.floor(min_v * height) - 1)
-            max_v_pixel = min(height, math.floor(max_v * height) + 1)
+            min_u_pixel = max(0, math.floor(min_u * width))
+            max_u_pixel = min(width, math.ceil(max_u * width))
+            min_v_pixel = max(0, math.floor(min_v * height))
+            max_v_pixel = min(height, math.ceil(max_v * height))
 
             # for each pixel
             for act_height in range(min_v_pixel, max_v_pixel):
                 # get scanline height
                 
-                scanline = (min_v_pixel + act_height + 0.5) / height
+                scanline = (act_height + 0.5) * pixel_width
 
                 # calculate triangle intersections
                 intersections = calculate_intersections(triangle_uvs[3 * i + 0][0], triangle_uvs[3 * i + 0][1],
                                                         triangle_uvs[3 * i + 1][0], triangle_uvs[3 * i + 1][1],
                                                         triangle_uvs[3 * i + 2][0], triangle_uvs[3 * i + 2][1],
                                                         scanline)
-                intersections = [x for x in intersections if min_u <= x <= max_u]
+                                                
 
                 new_min = min_u_pixel
                 new_max = max_u_pixel
-                #if intersections:
-                #    new_min = math.floor(min(intersections) * width)
-                #    new_max = math.floor(max(intersections) * width) 
-
+                if intersections:
+                    new_min = max(min_u_pixel, math.floor(min(intersections) * width -1))
+                    new_max = min(max_u_pixel, math.ceil(max(intersections) * width + 1))
+                                                        
+                    
                 for act_width in range(new_min, new_max):
-
+        
                     color = np.array([0.0, 0.0, 0.0])
                     normal = np.array([0.0, 0.0, 0.0])
 
@@ -410,11 +411,11 @@ def texture_mesh(self, context):
 
                     if context.scene.texture_pixel_corners:
                        
-                        #if act_width == new_min or act_width == new_max:
-                        for corner in range(4):
-                            p = [(act_width + (2.0 * (corner % 2) * 0.5)) * pixel_width,
-                                 (act_height + (2.0 * (corner // 2) * 0.5)) * pixel_height]
-                            pixel_positions.append(p)
+                        if act_width in [new_min, new_min+1, new_max-2, new_max-1]:
+                            for corner in range(4):
+                                p = [(act_width + (corner % 2)) * pixel_width,
+                                     (act_height + (corner // 2)) * pixel_height]
+                                pixel_positions.append(p)
                         
 
 
@@ -425,7 +426,7 @@ def texture_mesh(self, context):
                                                          triangle_uvs[3 * i + 1][0], triangle_uvs[3 * i + 1][1],
                                                          triangle_uvs[3 * i + 2][0], triangle_uvs[3 * i + 2][1])
 
-                        if 0.0 <= alpha  and 0.0 <= beta <= 1.0 and 0.0 <= gamma <= 1.0:
+                        if 0.0 <= alpha <= 1.0 and 0.0 <= beta <= 1.0  and 0.0 <= gamma <= 1.0  :
 
                             # if barycentric coordinates are positive the pixel position lays within the triangle
                             v_a = vertices[triangles[i][0]]
@@ -456,6 +457,7 @@ def texture_mesh(self, context):
                             subpixel_hits[act_height, act_width] += 1
 
                     colors[act_height, act_width] += color
+                    
 
         nonzero_indices = subpixel_hits != 0
 
