@@ -676,7 +676,7 @@ class SettingsPanel(bpy.types.Panel):
 
         box2 = layout.box()
         box2.label(text="Triangulation")
-        box2.prop(context.scene, "pointcloud_downsampling_size", text="pdownsampling size")
+        box2.prop(context.scene, "pointcloud_downsampling_size", text="downsampling size")
         box2.prop(context.scene, "triangulation_depth", text="depth")
         # box2.prop(context.scene, "triangulation_scale", text="scale")
 
